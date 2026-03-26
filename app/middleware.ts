@@ -12,16 +12,12 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    if (url.startsWith('/admin/login')) {
-        return NextResponse.next();
-    }
+    const staffToken = request.cookies.get('staff_token')?.value;
+    const staffProtectedPaths = ['/dashboard'];
+    const isStaffProtectedRoute = staffProtectedPaths.some((path) => url.startsWith(path));
 
-    const adminToken = request.cookies.get('admin_token')?.value;
-    const adminProtectedPaths = ['/admin'];
-    const isAdminProtectedRoute = adminProtectedPaths.some((path) => url.startsWith(path));
-
-    if (isAdminProtectedRoute && !adminToken) {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
+    if (isStaffProtectedRoute && !staffToken && !url.startsWith('/dashboard/login')) {
+        return NextResponse.redirect(new URL('/dashboard/login', request.url));
     }
 
     return NextResponse.next();

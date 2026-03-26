@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Profilul meu", href: "/user/profil", icon: "/icons/user.svg" },
-  { label: "Sesizările mele", href: "/user/sesizari", icon: "/icons/message-bubble-exclamation.svg" },
+  { label: "Acasă",    href: "/dashboard/admin/home",   icon: "/icons/home.svg"     },
+  { label: "Sesizări", href: "/dashboard/admin/sesizari", icon: "/icons/message-bubble-exclamation.svg" },
   { label: "Deconectare", href: "/logout", icon: "/icons/door-open-alt.svg" },
 ];
 
@@ -18,7 +18,7 @@ export default function AccountSidebar() {
       {/* Desktop */}
       <aside className="hidden h-full md:flex flex-col w-72 bg-gray-100 rounded-2xl p-6 gap-2 self-stretch border border-gray-300">
         <h2 className="text-xs font-black text-blue uppercase tracking-widest mb-4 ml-1">
-          Contul meu
+          Dashboard
         </h2>
 
         {menuItems.map((item) => {
@@ -27,10 +27,11 @@ export default function AccountSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-md font-bold transition-all ${
+                isActive
                   ? "bg-white text-dark-blue border border-gray-300"
                   : "text-gray-500 hover:bg-white/60 hover:text-dark-blue"
-                }`}
+              }`}
             >
               <Image src={item.icon} alt={item.label} width={18} height={18} />
               {item.label}
@@ -47,10 +48,11 @@ export default function AccountSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center ${isActive
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center ${
+                isActive
                   ? "bg-white text-dark-blue border border-gray-300"
                   : "text-gray-500 hover:bg-white/60 hover:text-dark-blue"
-                }`}
+              }`}
             >
               <Image src={item.icon} alt={item.label} width={16} height={16} />
               {item.label}

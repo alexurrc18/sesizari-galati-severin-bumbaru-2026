@@ -3,16 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAuth } from '@/app/context/auth-context';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
-    const { isAuthenticated } = useAuth();
 
     return (
         <nav className="w-full px-6 md:px-12 py-4 flex items-center justify-between bg-white relative z-50">
             <div className="flex items-center">
-                <Link href="/" className="transition-opacity hover:opacity-80">
+                <Link href="/dashboard/admin/home" className="transition-opacity hover:opacity-80">
                     <Image
                         src="/logo.png"
                         alt="Logo Galați"
@@ -41,10 +39,10 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                    href={isAuthenticated ? "/user/profil" : "/login"}
+                    href="/"
                     className="bg-blue text-white px-6 py-3 text-sm font-bold flex items-center gap-2 hover:bg-[#4a8ebf] transition-all rounded-xl active:scale-95"
                 >
-                    {isAuthenticated ? "Profilul meu" : "Conectare"}
+                    Portal sesizări
                 </Link>
             </div>
 
@@ -80,11 +78,11 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                        href={isAuthenticated ? "/user/profil" : "/login"}
+                        href="/"
                         onClick={() => setIsOpen(false)}
                         className="bg-blue text-white px-8 py-3 text-sm font-bold flex items-center gap-2 hover:bg-[#4a8ebf] transition-all rounded-xl active:scale-95 w-11/12 justify-center"
                     >
-                        {isAuthenticated ? "Profilul meu" : "Conectare"}
+                        Portal sesizări
                     </Link>
                 </div>
             )}

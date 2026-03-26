@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { aspekta } from "@/app/ui/fonts";
 import '@/app/ui/globals.css';
-import Navbar from "@/app/ui/navbar";
-import { AuthProvider } from "@/app/context/auth-context";
+import Navbar from "@/app/ui/dashboard/navbar";
 
 export const metadata: Metadata = {
-  title: "Sesizări Galați",
+  title: "Sesizări Galați - Angajați",
   description: "Raportați problemele din Galați și ajutați la îmbunătățirea orașului!",
   icons: {
     icon: "/favicon.ico",
@@ -20,10 +19,8 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body className={`${aspekta.className} min-h-full flex flex-col antialiased`}>
-        <AuthProvider>
-          <Navbar />
-          {children}
-        </AuthProvider>
+        <Navbar />
+        {children}
       </body>
     </html>
   );
