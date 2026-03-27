@@ -1,0 +1,6 @@
+@SesizariGalatiAPI_HostAddress = http://localhost:5103
+
+GET {{SesizariGalatiAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

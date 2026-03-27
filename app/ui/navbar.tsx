@@ -2,12 +2,46 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useAuth } from '@/app/context/auth-context';
+import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const [authState, setAuthState] = useState<'none' | 'user' | 'employee'>('none');
+
+    // Verifică ambele cookie-uri (user + angajat)
+    useEffect(() => {
+        const checkAuth = () => {
+            const userToken = Cookies.get('auth_token');
+            const staffToken = Cookies.get('staff_token');
+            
+            if (userToken) setAuthState('user');
+            else if (staffToken) setAuthState('employee');
+            else setAuthState('none');
+        };
+
+        checkAuth();
+
+        // Re-verifică periodic (ex: după login în alt tab)
+        const interval = setInterval(checkAuth, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const getButtonLink = () => {
+        switch (authState) {
+            case 'user': return '/user/profil';
+            case 'employee': return '/dashboard/admin/home';
+            default: return '/login';
+        }
+    };
+
+    const getButtonLabel = () => {
+        switch (authState) {
+            case 'user': return 'Profilul meu';
+            case 'employee': return 'Dashboard';
+            default: return 'Conectare';
+        }
+    };
 
     return (
         <nav className="w-full px-6 md:px-12 py-4 flex items-center justify-between bg-white relative z-50">
@@ -41,10 +75,10 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                    href={isAuthenticated ? "/user/profil" : "/login"}
+                    href={getButtonLink()}
                     className="bg-blue text-white px-6 py-3 text-sm font-bold flex items-center gap-2 hover:bg-[#4a8ebf] transition-all rounded-xl active:scale-95"
                 >
-                    {isAuthenticated ? "Profilul meu" : "Conectare"}
+                    {getButtonLabel()}
                 </Link>
             </div>
 
@@ -80,11 +114,11 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                        href={isAuthenticated ? "/user/profil" : "/login"}
+                        href={getButtonLink()}
                         onClick={() => setIsOpen(false)}
                         className="bg-blue text-white px-8 py-3 text-sm font-bold flex items-center gap-2 hover:bg-[#4a8ebf] transition-all rounded-xl active:scale-95 w-11/12 justify-center"
                     >
-                        {isAuthenticated ? "Profilul meu" : "Conectare"}
+                        {getButtonLabel()}
                     </Link>
                 </div>
             )}

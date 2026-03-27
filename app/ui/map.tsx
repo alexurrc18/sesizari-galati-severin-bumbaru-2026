@@ -2,27 +2,19 @@
 
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { BOUNDS, CENTER, MIN_ZOOM, DEFAULT_ZOOM } from "@/app/config/map";
-import { Report } from "@/app/config/sesizari";
+import { MapReport, getPinIcon } from "@/app/lib/api";
 import { useState } from "react";
 import Image from "next/image";
 import Sesizare from './sesizare';
 
-const STATUS_PIN: Record<string, string> = {
-    rezolvat: "/icons/pin_green.svg",
-    inlucru: "/icons/pin_marigold.svg",
-    respins: "/icons/pin_red.svg",
-    propus: "/icons/pin_blue.svg",
-};
-
 interface MapComponentProps {
     onCenterChange?: (lat: number, lng: number) => void;
-    onBoundsCheck?: (lat: number, lng: number) => void;
-    reports?: Report[];
+    reports?: MapReport[];
 }
 
-export default function MapComponent({ onCenterChange, onBoundsCheck, reports = [] }: MapComponentProps) {
+export default function MapComponent({ onCenterChange, reports = [] }: MapComponentProps) {
     const map = useMap("HARTA_SESIZARI_GALATI");
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
 
     return (
         <div className="w-full h-full">
@@ -41,6 +33,7 @@ export default function MapComponent({ onCenterChange, onBoundsCheck, reports = 
                 {reports.map((report) => {
                     const isSelected = selectedId === report.id;
                     const pinSize = isSelected ? 50 : 30;
+                    const pinIcon = getPinIcon(report.statusId);
 
                     return (
                         <AdvancedMarker
@@ -66,8 +59,8 @@ export default function MapComponent({ onCenterChange, onBoundsCheck, reports = 
                                 )}
 
                                 <Image
-                                    src={STATUS_PIN[report.status]}
-                                    alt={report.status}
+                                    src={pinIcon}
+                                    alt={report.statusName}
                                     width={pinSize}
                                     height={pinSize}
                                     style={{ transition: "width 0.2s, height 0.2s" }}

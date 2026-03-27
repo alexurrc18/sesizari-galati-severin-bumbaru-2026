@@ -3,15 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/app/context/auth-context";
 
-const menuItems = [
+const navItems = [
   { label: "Profilul meu", href: "/user/profil", icon: "/icons/user.svg" },
   { label: "Sesizările mele", href: "/user/sesizari", icon: "/icons/message-bubble-exclamation.svg" },
-  { label: "Deconectare", href: "/logout", icon: "/icons/door-open-alt.svg" },
 ];
 
 export default function AccountSidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <>
@@ -21,7 +22,7 @@ export default function AccountSidebar() {
           Contul meu
         </h2>
 
-        {menuItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -37,11 +38,28 @@ export default function AccountSidebar() {
             </Link>
           );
         })}
+
+        {/* Buton adaugă sesizare */}
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all bg-orange text-white hover:bg-orange-400 mt-2"
+        >
+          <span className="text-lg leading-none">+</span>
+          Adaugă sesizare
+        </Link>
+
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-gray-500 hover:bg-white/60 hover:text-red-600 mt-auto"
+        >
+          <Image src="/icons/door-open-alt.svg" alt="Deconectare" width={18} height={18} />
+          Deconectare
+        </button>
       </aside>
 
       {/* Mobile */}
       <nav className="flex md:hidden w-full bg-gray-100 rounded-2xl px-4 py-3 gap-2">
-        {menuItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -57,6 +75,19 @@ export default function AccountSidebar() {
             </Link>
           );
         })}
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center bg-orange text-white"
+        >
+          + Sesizare
+        </Link>
+        <button
+          onClick={logout}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-1 justify-center text-gray-500 hover:bg-white/60 hover:text-red-600"
+        >
+          <Image src="/icons/door-open-alt.svg" alt="Deconectare" width={16} height={16} />
+          Ieși
+        </button>
       </nav>
     </>
   );

@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/auth-context";
+import { useRouter } from "next/navigation";
 
 export default function ProfilPage() {
-  const { userData, updateProfile } = useAuth();
+  const { userData, completeProfile, updateLocalUserData, authenticatedFetch, isLoading: authLoading } = useAuth();
+  const router = useRouter();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -26,39 +28,85 @@ export default function ProfilPage() {
 
   const handleSave = async () => {
     setMessage(null);
-    if (!userData?.idUser) {
-        setMessage({ type: 'error', text: 'Eroare: Lipsă ID utilizator.'});
-        return;
-    }
     
+    if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
+      setMessage({ type: 'error', text: 'Completează toate câmpurile obligatorii (Nume, Prenume, Telefon).' });
+      return;
+    }
+
     setIsSaving(true);
     
-    const success = await updateProfile(
-      {
+    if (!userData?.validation) {
+      // ===== PROFIL NOU — completare inițială (CNP obligatoriu) =====
+      if (!cnp.trim() || cnp.length !== 13) {
+        setMessage({ type: 'error', text: 'CNP-ul trebuie să aibă exact 13 cifre.' });
+        setIsSaving(false);
+        return;
+      }
+
+      const success = await completeProfile({
         firstName,
         lastName,
-        phone,
-        cnp
-      },
-      userData.idUser
-    );
-    
-    if (success) {
-        setMessage({ type: 'success', text: 'Profil actualizat cu succes!'});
+        cnp,
+        phone
+      });
+      
+      if (success) {
+        setMessage({ type: 'success', text: 'Profil completat cu succes! Acum poți adăuga sesizări.' });
+        setTimeout(() => router.push('/'), 2000);
+      } else {
+        setMessage({ type: 'error', text: 'A apărut o eroare la salvare. Verifică datele introduse.' });
+      }
     } else {
-        setMessage({ type: 'error', text: 'A apărut o eroare la salvare.'});
+      // ===== PROFIL EXISTENT — actualizare date (fără CNP) =====
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      try {
+        const response = await authenticatedFetch(`${apiUrl}/Users/${userData.idUser}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            phone
+          })
+        });
+        
+        if (response.ok) {
+          // Actualizare stare locală + localStorage
+          updateLocalUserData({ firstName, lastName, phone });
+          setMessage({ type: 'success', text: 'Profil actualizat cu succes!' });
+        } else {
+          const err = await response.json().catch(() => null);
+          setMessage({ type: 'error', text: err?.message || 'A apărut o eroare la salvare.' });
+        }
+      } catch {
+        setMessage({ type: 'error', text: 'Eroare de conexiune.' });
+      }
     }
     
     setIsSaving(false);
   };
 
-  if (!userData) {
-      return <div className="p-6 text-dark-blue font-bold">Se încarcă datele profilului...</div>;
+  if (authLoading) {
+    return <div className="p-6 text-dark-blue font-bold">Se încarcă...</div>;
   }
+
+  if (!userData) {
+    return <div className="p-6 text-dark-blue font-bold">Se încarcă datele profilului...</div>;
+  }
+
+  const isNewProfile = !userData.validation;
+  const hasCnp = !!(userData.cnp && userData.cnp.trim().length > 0);
 
   return (
     <div className="flex flex-col gap-6 max-w-xl">
-      <h1 className="text-2xl font-bold text-dark-blue">Profilul meu</h1>
+      <div>
+        <h1 className="text-2xl font-bold text-dark-blue">Profilul meu</h1>
+        {isNewProfile && (
+          <p className="text-sm text-orange font-medium mt-1">
+            Completează-ți profilul pentru a putea adăuga sesizări.
+          </p>
+        )}
+      </div>
 
       <div className="flex flex-col gap-4">
 
@@ -113,14 +161,15 @@ export default function ProfilPage() {
           <input
             type="text"
             value={cnp}
-            onChange={(e) => setCnp(e.target.value)}
-            disabled={!!userData?.cnp && userData.cnp.length > 0}
+            onChange={(e) => setCnp(e.target.value.replace(/[^0-9]/g, ''))}
+            maxLength={13}
+            disabled={hasCnp}
             placeholder="xxxxxxxxxxxxx"
             className={`w-full p-3 bg-gray-100 rounded-xl text-sm font-bold border-2 border-transparent ${
-              userData?.cnp && userData.cnp.length > 0 ? "text-gray-400 cursor-not-allowed select-none" : "text-gray-700 focus:outline-none focus:border-blue/20"
+              hasCnp ? "text-gray-400 cursor-not-allowed select-none" : "text-gray-700 focus:outline-none focus:border-blue/20"
             }`}
           />
-          <span className="text-xs text-gray-400 ml-1">CNP-ul nu poate fi modificat după prima salvare.</span>
+          {hasCnp && <span className="text-xs text-gray-400 ml-1">CNP-ul nu poate fi modificat după prima salvare.</span>}
         </div>
 
         {message && (
@@ -138,7 +187,7 @@ export default function ProfilPage() {
             isSaving ? "bg-orange-300 text-white cursor-wait" : "bg-orange hover:bg-orange-500 text-white active:scale-95"
           }`}
         >
-          {isSaving ? "Se salvează..." : "Salvează modificările"}
+          {isSaving ? "Se salvează..." : (isNewProfile ? "Completează profilul" : "Salvează modificările")}
         </button>
 
       </div>

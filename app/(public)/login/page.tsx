@@ -57,14 +57,20 @@ export default function Login() {
     setPinError(false);
     setIsLoading(true);
 
-    const success = await verifyPin(email, pin);
+    const result = await verifyPin(email, pin);
     
     setIsLoading(false);
 
-    if (success) {
-      router.push("/");
-    } else {
-      setApiError("Codul PIN este incorect sau a expirat.");
+    if (result.success && result.redirect) {
+      router.push(result.redirect);
+    } else if (!result.success) {
+      // Dacă e cont de angajat, redirect la dashboard login
+      if (result.redirect) {
+        setApiError(result.errorMessage || "");
+        setTimeout(() => router.push(result.redirect!), 2000);
+      } else {
+        setApiError(result.errorMessage || "Codul PIN este incorect sau a expirat.");
+      }
     }
   };
 
